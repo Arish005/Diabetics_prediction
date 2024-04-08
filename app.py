@@ -2,6 +2,15 @@ import pickle
 import numpy as np
 import streamlit as st
 from sklearn.tree import DecisionTreeClassifier
+import pickle
+
+# Load the model
+with open('diabetes-prediction-rfc-model.pkl', 'rb') as file:
+    model = pickle.load(file)
+
+# Re-save the model with the correct dtype
+with open('diabetes-prediction-rfc-model.pkl', 'wb') as file:
+    pickle.dump(model, file, protocol=pickle.HIGHEST_PROTOCOL)
 
 # Load the model
 model_file = 'diabetes-prediction-rfc-model.pkl'
