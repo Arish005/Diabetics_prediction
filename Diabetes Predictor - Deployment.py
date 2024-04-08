@@ -5,9 +5,9 @@ import pickle
 
 # Loading the dataset
 # Loading the dataset with raw string literal
-df = pd.read_csv(r'E:\MY DOCUMENT LINKS\Desktop\2ND Y 2ND SEM\ML ASSIGNMENT\End-to-End-Diabetes-Prediction-Application-Using-Machine-Learning-master\End-to-End-Diabetes-Prediction-Application-Using-Machine-Learning-master\diabetes.csv')
+df = pd.read_csv(r'diabetes.csv')
 # Loading the dataset with forward slashes
-df = pd.read_csv('E:/MY DOCUMENT LINKS/Desktop/2ND Y 2ND SEM/ML ASSIGNMENT/End-to-End-Diabetes-Prediction-Application-Using-Machine-Learning-master/End-to-End-Diabetes-Prediction-Application-Using-Machine-Learning-master/diabetes.csv')
+df = pd.read_csv('diabetes.csv')
 
 # Renaming DiabetesPedigreeFunction as DPF
 df = df.rename(columns={'DiabetesPedigreeFunction':'DPF'})
