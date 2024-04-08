@@ -4,7 +4,15 @@ import streamlit as st
 
 # Load the Random Forest Classifier model
 filename = 'diabetes-prediction-rfc-model.pkl'
-classifier = pickle.load(open(filename, 'rb'))
+
+try:
+    classifier = pickle.load(open(filename, 'rb'))
+except FileNotFoundError:
+    st.error(f"Error: Model file '{filename}' not found. Please make sure the file exists.")
+    st.stop()
+except Exception as e:
+    st.error(f"Error loading the model: {e}")
+    st.stop()
 
 # Function to predict diabetes
 def predict_diabetes(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age):
@@ -31,16 +39,22 @@ def main():
         Age = st.sidebar.slider("Age", 21, 81, 29)
 
         if st.sidebar.button("Predict"):
-            result = predict_diabetes(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age)
-            st.session_state.prediction = result[0]
-            st.session_state.page = "result"
+            try:
+                result = predict_diabetes(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age)
+                st.session_state.prediction = result[0]
+                st.session_state.page = "result"
+            except Exception as e:
+                st.error(f"Error predicting: {e}")
 
     # Result page
     elif st.session_state.page == "result":
-        if st.session_state.prediction == 0:
-            st.success('The person is not diabetic')
+        if "prediction" in st.session_state:
+            if st.session_state.prediction == 0:
+                st.success('The person is not diabetic')
+            else:
+                st.success('The person is diabetic')
         else:
-            st.success('The person is diabetic')
+            st.error("No prediction found.")
 
     st.write("Made by Arish")
 
