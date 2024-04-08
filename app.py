@@ -1,32 +1,9 @@
+import streamlit as st
 import pickle
 import numpy as np
-import streamlit as st
-from sklearn.tree import DecisionTreeClassifier
-import pickle
 
-# Load the model
-with open('diabetes-prediction-rfc-model.pkl', 'rb') as file:
-    model = pickle.load(file)
-
-# Re-save the model with the correct dtype
-with open('diabetes-prediction-rfc-model.pkl', 'wb') as file:
-    pickle.dump(model, file, protocol=pickle.HIGHEST_PROTOCOL)
-
-# Load the model
-model_file = 'diabetes-prediction-rfc-model.pkl'
-
-try:
-    with open(model_file, 'rb') as f:
-        model = pickle.load(f)
-        if not isinstance(model, DecisionTreeClassifier):
-            st.warning("Loaded model is not a Decision Tree model. Please provide a valid model.")
-            st.stop()
-except FileNotFoundError:
-    st.error(f"Error: Model file '{model_file}' not found. Please make sure the file exists.")
-    st.stop()
-except Exception as e:
-    st.error(f"Error loading the model: {e}")
-    st.stop()
+# Load the trained model
+model = pickle.load(open('diabetes-prediction-rfc-model.pkl', 'rb'))
 
 # Function to predict diabetes
 def predict_diabetes(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age):
@@ -37,14 +14,16 @@ def predict_diabetes(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin
 # Streamlit app
 def main():
     # Page title
-    st.title("Diabetes Predictor")
+    st.title("Diabetes Prediction")
 
-    # Sidebar for user input
+    # Sidebar
     st.sidebar.title("User Input")
+
+    # Input features
     Pregnancies = st.sidebar.slider("Pregnancies", 0, 17, 3)
     Glucose = st.sidebar.slider("Glucose", 0, 199, 117)
-    BloodPressure = st.sidebar.slider("Blood Pressure", 0, 122, 72)
-    SkinThickness = st.sidebar.slider("Skin Thickness", 0, 99, 23)
+    BloodPressure = st.sidebar.slider("BloodPressure", 0, 122, 72)
+    SkinThickness = st.sidebar.slider("SkinThickness", 0, 99, 23)
     Insulin = st.sidebar.slider("Insulin", 0, 846, 30)
     BMI = st.sidebar.slider("BMI", 0.0, 67.1, 32.0)
     DPF = st.sidebar.slider("DPF", 0.078, 2.42, 0.3725)
@@ -52,16 +31,11 @@ def main():
 
     # Prediction
     if st.sidebar.button("Predict"):
-        try:
-            result = predict_diabetes(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age)
-            if result[0] == 0:
-                st.success('The person is not diabetic')
-            else:
-                st.success('The person is diabetic')
-        except Exception as e:
-            st.error(f"Error predicting: {e}")
-
-    st.write("Made by Arish")
+        result = predict_diabetes(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age)
+        if result[0] == 0:
+            st.success('The person is not diabetic')
+        else:
+            st.success('The person is diabetic')
 
 if __name__ == '__main__':
     main()
