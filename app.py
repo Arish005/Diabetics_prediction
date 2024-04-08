@@ -1,6 +1,7 @@
 import pickle
 import numpy as np
 import streamlit as st
+from sklearn.tree import DecisionTreeClassifier  # Import DecisionTreeClassifier
 
 # Load the model
 model_file = 'diabetes-prediction-rfc-model.pkl'
@@ -8,10 +9,9 @@ model_file = 'diabetes-prediction-rfc-model.pkl'
 try:
     with open(model_file, 'rb') as f:
         model = pickle.load(f)
-        if isinstance(model, DecisionTreeClassifier):
-            model = RandomForestClassifier()  # Convert Decision Tree to Random Forest
-            model.estimators_ = [model]
-            st.warning("Loaded model is a Decision Tree. Converted to Random Forest for prediction.")
+        if not isinstance(model, DecisionTreeClassifier):
+            st.warning("Loaded model is not a Decision Tree. Please provide a valid model.")
+            st.stop()
 except FileNotFoundError:
     st.error(f"Error: Model file '{model_file}' not found. Please make sure the file exists.")
     st.stop()
