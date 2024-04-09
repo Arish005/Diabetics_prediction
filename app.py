@@ -33,11 +33,15 @@ def load_model():
         return model
     except Exception as e:
         logging.error(f"Error loading the model: {e}")
-        st.error("An error occurred while loading the model. Please try again later.")
-        st.stop()
+        return None
 
 # Load the model
 model = load_model()
+
+# Check if model loaded successfully
+if model is None:
+    st.error("An error occurred while loading the model. Please try again later.")
+    st.stop()
 
 # Function to predict diabetes
 def predict_diabetes(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age):
