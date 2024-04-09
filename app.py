@@ -1,86 +1,42 @@
 import streamlit as st
+import joblib
 import numpy as np
-import pandas as pd
-import pickle
-import logging
 
-# Configure logging
-logging.basicConfig(filename='app.log', level=logging.ERROR)
-
-# Function to fix dtype of tree nodes
-def fix_tree(tree):
-    if tree is not None:
-        tree.left_child = fix_tree(tree.left_child)
-        tree.right_child = fix_tree(tree.right_child)
-        tree.feature = int(tree.feature)
-        tree.threshold = float(tree.threshold)
-        tree.impurity = float(tree.impurity)
-        tree.n_node_samples = int(tree.n_node_samples)
-        tree.weighted_n_node_samples = float(tree.weighted_n_node_samples)
-    return tree
-
-# Function to load the model
 def load_model():
     try:
-        # Load the model from the pickle file
-        with open('diabetes-prediction-rfc-model.pkl', 'rb') as file:
-            model = pickle.load(file)
-        
-        # Apply dtype fix to each estimator
-        for estimator in model.estimators_:
-            fix_tree(estimator.tree_)
-        
-        return model
+        # Load the Random Forest Classifier model
+        filename = 'diabetes-prediction-rfc-model.joblib'
+        classifier = joblib.load(filename)
+        return classifier
     except Exception as e:
-        logging.error(f"Error loading the model: {e}")
+        st.error(f"An error occurred while loading the model: {e}")
         return None
 
-# Load the model
-model = load_model()
-
-# Check if model loaded successfully
-if model is None:
-    st.error("An error occurred while loading the model. Please try again later.")
-    st.stop()
-
-# Function to predict diabetes
-def predict_diabetes(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age):
-    try:
-        input_data = np.array([[Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age]])
-        prediction = model.predict(input_data)
-        return prediction
-    except Exception as e:
-        logging.error(f"Error predicting diabetes: {e}")
-        return None
-
-# Streamlit app
 def main():
-    # Page title
-    st.title("Diabetes Prediction")
+    st.title('Diabetes Prediction')
 
-    # Sidebar
-    st.sidebar.title("User Input")
+    # Load the model
+    classifier = load_model()
+    if classifier is None:
+        st.write("Please check the model file and try again later.")
+        return
 
-    # Input features
-    Pregnancies = st.sidebar.slider("Pregnancies", 0, 17, 3)
-    Glucose = st.sidebar.slider("Glucose", 0, 199, 117)
-    BloodPressure = st.sidebar.slider("BloodPressure", 0, 122, 72)
-    SkinThickness = st.sidebar.slider("SkinThickness", 0, 99, 23)
-    Insulin = st.sidebar.slider("Insulin", 0, 846, 30)
-    BMI = st.sidebar.slider("BMI", 0.0, 67.1, 32.0)
-    DPF = st.sidebar.slider("DPF", 0.078, 2.42, 0.3725)
-    Age = st.sidebar.slider("Age", 21, 81, 29)
+    pregnancies = st.number_input('Pregnancies', min_value=0, max_value=17, value=0)
+    glucose = st.number_input('Glucose', min_value=0, max_value=200, value=0)
+    blood_pressure = st.number_input('Blood Pressure', min_value=0, max_value=122, value=0)
+    skin_thickness = st.number_input('Skin Thickness', min_value=0, max_value=99, value=0)
+    insulin = st.number_input('Insulin', min_value=0, max_value=846, value=0)
+    bmi = st.number_input('BMI', min_value=0.0, max_value=67.1, value=0.0)
+    dpf = st.number_input('Diabetes Pedigree Function', min_value=0.078, max_value=2.42, value=0.078)
+    age = st.number_input('Age', min_value=21, max_value=81, value=21)
 
-    # Prediction
-    if st.sidebar.button("Predict"):
-        result = predict_diabetes(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age)
-        if result is not None:
-            if result[0] == 0:
-                st.success('The person is not diabetic')
-            else:
-                st.success('The person is diabetic')
+    if st.button('Predict'):
+        data = np.array([[pregnancies, glucose, blood_pressure, skin_thickness, insulin, bmi, dpf, age]])
+        prediction = classifier.predict(data)
+        if prediction[0] == 1:
+            st.error('You might have diabetes.')
         else:
-            st.error("An error occurred while predicting. Please try again later.")
+            st.success('You may not have diabetes.')
 
 if __name__ == '__main__':
     main()
