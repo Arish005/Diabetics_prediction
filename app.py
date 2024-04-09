@@ -1,10 +1,12 @@
 import streamlit as st
 import pickle
 import numpy as np
+from sklearn.ensemble import RandomForestClassifier
 
 # Load the Random Forest Classifier model
 filename = 'diabetes-prediction-rfc-model.pkl'
-classifier = pickle.load(open(filename, 'rb'))
+with open(filename, 'rb') as file:
+    classifier = pickle.load(file)
 
 # Function to predict diabetes
 def predict_diabetes(preg, glucose, bp, st, insulin, bmi, dpf, age):
