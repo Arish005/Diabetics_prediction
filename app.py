@@ -1,34 +1,53 @@
 import streamlit as st
-import joblib
 import numpy as np
+import pandas as pd
+import pickle
+import logging
 
-# Load the trained model
-try:
-    model = joblib.load('diabetes-prediction-rfc-model.pkl')
-    
-    # Manually fix dtype of tree nodes
-    def fix_tree(tree):
-        if tree is not None:
-            tree.left_child = fix_tree(tree.left_child)
-            tree.right_child = fix_tree(tree.right_child)
-            tree.feature = int(tree.feature)
-            tree.threshold = float(tree.threshold)
-            tree.impurity = float(tree.impurity)
-            tree.n_node_samples = int(tree.n_node_samples)
-            tree.weighted_n_node_samples = float(tree.weighted_n_node_samples)
-        return tree
-    
-    model.tree_ = fix_tree(model.tree_)
-    
-except Exception as e:
-    st.error(f"Error loading the model: {e}")
-    st.stop()
+# Configure logging
+logging.basicConfig(filename='app.log', level=logging.ERROR)
+
+# Function to fix dtype of tree nodes
+def fix_tree(tree):
+    if tree is not None:
+        tree.left_child = fix_tree(tree.left_child)
+        tree.right_child = fix_tree(tree.right_child)
+        tree.feature = int(tree.feature)
+        tree.threshold = float(tree.threshold)
+        tree.impurity = float(tree.impurity)
+        tree.n_node_samples = int(tree.n_node_samples)
+        tree.weighted_n_node_samples = float(tree.weighted_n_node_samples)
+    return tree
+
+# Function to load the model
+def load_model():
+    try:
+        # Load the model from the pickle file
+        with open('diabetes-prediction-rfc-model.pkl', 'rb') as file:
+            model = pickle.load(file)
+        
+        # Apply dtype fix to each estimator
+        for estimator in model.estimators_:
+            fix_tree(estimator.tree_)
+        
+        return model
+    except Exception as e:
+        logging.error(f"Error loading the model: {e}")
+        st.error("An error occurred while loading the model. Please try again later.")
+        st.stop()
+
+# Load the model
+model = load_model()
 
 # Function to predict diabetes
 def predict_diabetes(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age):
-    input_data = np.array([[Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age]])
-    prediction = model.predict(input_data)
-    return prediction
+    try:
+        input_data = np.array([[Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age]])
+        prediction = model.predict(input_data)
+        return prediction
+    except Exception as e:
+        logging.error(f"Error predicting diabetes: {e}")
+        return None
 
 # Streamlit app
 def main():
@@ -51,10 +70,13 @@ def main():
     # Prediction
     if st.sidebar.button("Predict"):
         result = predict_diabetes(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age)
-        if result[0] == 0:
-            st.success('The person is not diabetic')
+        if result is not None:
+            if result[0] == 0:
+                st.success('The person is not diabetic')
+            else:
+                st.success('The person is diabetic')
         else:
-            st.success('The person is diabetic')
+            st.error("An error occurred while predicting. Please try again later.")
 
 if __name__ == '__main__':
     main()
