@@ -2,18 +2,7 @@ import streamlit as st
 import joblib
 import numpy as np
 
-# Save the model
-joblib.dump(model, 'diabetes-prediction-rfc-model.pkl')
-
-import joblib
-
-# Load the model
-try:
-    model = joblib.load('diabetes-prediction-rfc-model.pkl')
-except Exception as e:
-    print(f"Error loading the model: {e}")
-
-# Load the trained model using joblib
+# Load the trained model
 try:
     model = joblib.load('diabetes-prediction-rfc-model.pkl')
 except Exception as e:
