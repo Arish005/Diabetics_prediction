@@ -3,11 +3,13 @@ import joblib
 import numpy as np
 
 # Load the trained model
+# Save the trained model
 try:
-    model = joblib.load('diabetes-prediction-rfc-model.pkl')
+    joblib.dump(model, 'diabetes-prediction-rfc-model.pkl', compress=True)
 except Exception as e:
-    st.error(f"Error loading the model: {e}")
+    st.error(f"Error saving the model: {e}")
     st.stop()
+
 
 # Function to predict diabetes
 def predict_diabetes(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age):
