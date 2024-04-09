@@ -1,6 +1,4 @@
 import streamlit as st
-import pickle
-import numpy as np
 import joblib
 import numpy as np
 
@@ -8,16 +6,6 @@ import numpy as np
 model = joblib.load('diabetes-prediction-rfc-model.pkl')
 
 # Example prediction function
-def predict_diabetes(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age):
-    input_data = np.array([[Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age]])
-    prediction = model.predict(input_data)
-    return prediction
-
-
-# Load the trained model
-model = pickle.load(open('diabetes-prediction-rfc-model.pkl', 'rb'))
-
-# Function to predict diabetes
 def predict_diabetes(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age):
     input_data = np.array([[Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age]])
     prediction = model.predict(input_data)
