@@ -1,35 +1,9 @@
+import streamlit as st
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
 import pickle
 
-# Loading the dataset
-df = pd.read_csv('diabetes.csv')
-
-# Renaming DiabetesPedigreeFunction as DPF
-df = df.rename(columns={'DiabetesPedigreeFunction':'DPF'})
-
-# Replacing the 0 values from ['Glucose','BloodPressure','SkinThickness','Insulin','BMI'] by NaN
-df[['Glucose','BloodPressure','SkinThickness','Insulin','BMI']] = df[['Glucose','BloodPressure','SkinThickness','Insulin','BMI']].replace(0,np.NaN)
-
-# Replacing NaN value by mean, median depending upon distribution
-df['Glucose'].fillna(df['Glucose'].mean(), inplace=True)
-df['BloodPressure'].fillna(df['BloodPressure'].mean(), inplace=True)
-df['SkinThickness'].fillna(df['SkinThickness'].median(), inplace=True)
-df['Insulin'].fillna(df['Insulin'].median(), inplace=True)
-df['BMI'].fillna(df['BMI'].median(), inplace=True)
-
-# Model Building
-X = df.drop(columns='Outcome')
-y = df['Outcome']
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=0)
-
-# Creating Random Forest Model
-classifier = RandomForestClassifier(n_estimators=20)
-classifier.fit(X_train, y_train)
-
-# Manually fix dtype of tree nodes
+# Function to fix dtype of tree nodes
 def fix_tree(tree):
     if tree is not None:
         tree.left_child = fix_tree(tree.left_child)
@@ -41,10 +15,56 @@ def fix_tree(tree):
         tree.weighted_n_node_samples = float(tree.weighted_n_node_samples)
     return tree
 
-# Apply fix_tree to each estimator
-for tree in classifier.estimators_:
-    fix_tree(tree.tree_)
+# Function to load the model
+def load_model():
+    try:
+        # Load the model from the pickle file
+        with open('diabetes-prediction-rfc-model.pkl', 'rb') as file:
+            model = pickle.load(file)
+        
+        # Apply dtype fix to each estimator
+        for estimator in model.estimators_:
+            fix_tree(estimator.tree_)
+        
+        return model
+    except Exception as e:
+        st.error(f"Error loading the model: {e}")
+        st.stop()
 
-# Creating a pickle file for the classifier
-filename = 'diabetes-prediction-rfc-model.pkl'
-pickle.dump(classifier, open(filename, 'wb'))
+# Load the model
+model = load_model()
+
+# Function to predict diabetes
+def predict_diabetes(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age):
+    input_data = np.array([[Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age]])
+    prediction = model.predict(input_data)
+    return prediction
+
+# Streamlit app
+def main():
+    # Page title
+    st.title("Diabetes Prediction")
+
+    # Sidebar
+    st.sidebar.title("User Input")
+
+    # Input features
+    Pregnancies = st.sidebar.slider("Pregnancies", 0, 17, 3)
+    Glucose = st.sidebar.slider("Glucose", 0, 199, 117)
+    BloodPressure = st.sidebar.slider("BloodPressure", 0, 122, 72)
+    SkinThickness = st.sidebar.slider("SkinThickness", 0, 99, 23)
+    Insulin = st.sidebar.slider("Insulin", 0, 846, 30)
+    BMI = st.sidebar.slider("BMI", 0.0, 67.1, 32.0)
+    DPF = st.sidebar.slider("DPF", 0.078, 2.42, 0.3725)
+    Age = st.sidebar.slider("Age", 21, 81, 29)
+
+    # Prediction
+    if st.sidebar.button("Predict"):
+        result = predict_diabetes(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age)
+        if result[0] == 0:
+            st.success('The person is not diabetic')
+        else:
+            st.success('The person is diabetic')
+
+if __name__ == '__main__':
+    main()
