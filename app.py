@@ -1,15 +1,25 @@
 import streamlit as st
 import joblib
 import numpy as np
-import importlib
-import sklearn
-
-# Reload scikit-learn to mitigate circular import issue
-importlib.reload(sklearn)
 
 # Load the trained model
 try:
     model = joblib.load('diabetes-prediction-rfc-model.pkl')
+    
+    # Manually fix dtype of tree nodes
+    def fix_tree(tree):
+        if tree is not None:
+            tree.left_child = fix_tree(tree.left_child)
+            tree.right_child = fix_tree(tree.right_child)
+            tree.feature = int(tree.feature)
+            tree.threshold = float(tree.threshold)
+            tree.impurity = float(tree.impurity)
+            tree.n_node_samples = int(tree.n_node_samples)
+            tree.weighted_n_node_samples = float(tree.weighted_n_node_samples)
+        return tree
+    
+    model.tree_ = fix_tree(model.tree_)
+    
 except Exception as e:
     st.error(f"Error loading the model: {e}")
     st.stop()
