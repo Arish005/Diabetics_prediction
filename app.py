@@ -1,11 +1,14 @@
 import streamlit as st
 import joblib
 import numpy as np
+import os
 
 def load_model():
     try:
+        # Get the current directory
+        current_dir = os.path.dirname(__file__)
         # Load the Random Forest Classifier model
-        filename = 'diabetes-prediction-rfc-model.joblib'
+        filename = os.path.join(current_dir, 'diabetes-prediction-rfc-model.joblib')
         classifier = joblib.load(filename)
         return classifier
     except Exception as e:
