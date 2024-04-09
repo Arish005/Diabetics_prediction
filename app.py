@@ -1,18 +1,14 @@
 import streamlit as st
-import joblib
+import pickle
 import numpy as np
 
 # Load the trained model
-try:
-    classifier = joblib.load('diabetes-prediction-rfc-model.pkl')
-except Exception as e:
-    st.error(f"Error loading the model: {e}")
-    st.stop()
+model = pickle.load(open('diabetes-prediction-rfc-model.pkl', 'rb'))
 
 # Function to predict diabetes
 def predict_diabetes(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age):
     input_data = np.array([[Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age]])
-    prediction = classifier.predict(input_data)
+    prediction = model.predict(input_data)
     return prediction
 
 # Streamlit app
