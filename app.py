@@ -1,10 +1,34 @@
 import streamlit as st
-import joblib
+import pickle
 import numpy as np
+
+# Custom function to load model with dtype conversion
+def load_model(file_path):
+    with open(file_path, 'rb') as f:
+        return fix_pickle(pickle.load(f))
+
+# Function to fix dtype mismatch
+def fix_pickle(obj):
+    if isinstance(obj, tuple):
+        return tuple(fix_pickle(item) for item in obj)
+    elif isinstance(obj, list):
+        return [fix_pickle(item) for item in obj]
+    elif isinstance(obj, np.ndarray):
+        return obj.astype([
+            ('left_child', '<i8'), 
+            ('right_child', '<i8'), 
+            ('feature', '<i8'), 
+            ('threshold', '<f8'), 
+            ('impurity', '<f8'), 
+            ('n_node_samples', '<i8'), 
+            ('weighted_n_node_samples', '<f8')
+        ])
+    else:
+        return obj
 
 # Load the trained model
 try:
-    model = joblib.load('diabetes-prediction-rfc-model.pkl', mmap_mode='r')
+    model = load_model('diabetes-prediction-rfc-model.pkl')
 except Exception as e:
     st.error(f"Error loading the model: {e}")
     st.stop()
