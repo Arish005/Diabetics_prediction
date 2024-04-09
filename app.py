@@ -1,6 +1,11 @@
 import streamlit as st
 import pickle
 import numpy as np
+# Assuming 'classifier' is your trained RandomForestClassifier model
+import joblib
+
+# Save the model with joblib
+joblib.dump(classifier, 'diabetes-prediction-rfc-model.pkl')
 
 # Load the trained model
 try:
