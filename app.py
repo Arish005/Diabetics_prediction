@@ -2,8 +2,31 @@ import streamlit as st
 import joblib
 import numpy as np
 
+# Custom function to fix dtype mismatch issue
+def fix_model(file_path):
+    with open(file_path, 'rb') as f:
+        model = joblib.load(f)
+        model.tree_ = fix_tree(model.tree_)
+    return model
+
+# Custom function to fix dtype of tree nodes
+def fix_tree(tree):
+    if tree is not None:
+        tree.left_child = fix_tree(tree.left_child)
+        tree.right_child = fix_tree(tree.right_child)
+        tree.feature = np.int32(tree.feature)
+        tree.threshold = np.float64(tree.threshold)
+        tree.impurity = np.float64(tree.impurity)
+        tree.n_node_samples = np.int32(tree.n_node_samples)
+        tree.weighted_n_node_samples = np.float64(tree.weighted_n_node_samples)
+    return tree
+
 # Load the trained model
-model = joblib.load('diabetes-prediction-rfc-model.pkl')
+try:
+    model = fix_model('diabetes-prediction-rfc-model.pkl')
+except Exception as e:
+    st.error(f"Error loading the model: {e}")
+    st.stop()
 
 # Function to predict diabetes
 def predict_diabetes(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age):
