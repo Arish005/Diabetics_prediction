@@ -1,34 +1,29 @@
 import streamlit as st
-import pickle
+import joblib
 import numpy as np
 
-# Custom function to load model with dtype conversion
-def load_model(file_path):
+# Custom function to fix dtype mismatch issue
+def fix_model(file_path):
     with open(file_path, 'rb') as f:
-        return fix_pickle(pickle.load(f))
+        model = joblib.load(f)
+        model.tree_ = fix_tree(model.tree_)
+    return model
 
-# Function to fix dtype mismatch
-def fix_pickle(obj):
-    if isinstance(obj, tuple):
-        return tuple(fix_pickle(item) for item in obj)
-    elif isinstance(obj, list):
-        return [fix_pickle(item) for item in obj]
-    elif isinstance(obj, np.ndarray):
-        return obj.astype([
-            ('left_child', '<i8'), 
-            ('right_child', '<i8'), 
-            ('feature', '<i8'), 
-            ('threshold', '<f8'), 
-            ('impurity', '<f8'), 
-            ('n_node_samples', '<i8'), 
-            ('weighted_n_node_samples', '<f8')
-        ])
-    else:
-        return obj
+# Custom function to fix dtype of tree nodes
+def fix_tree(tree):
+    if tree is not None:
+        tree.left_child = fix_tree(tree.left_child)
+        tree.right_child = fix_tree(tree.right_child)
+        tree.feature = np.int32(tree.feature)
+        tree.threshold = np.float64(tree.threshold)
+        tree.impurity = np.float64(tree.impurity)
+        tree.n_node_samples = np.int32(tree.n_node_samples)
+        tree.weighted_n_node_samples = np.float64(tree.weighted_n_node_samples)
+    return tree
 
 # Load the trained model
 try:
-    model = load_model('diabetes-prediction-rfc-model.pkl')
+    model = fix_model('diabetes-prediction-rfc-model.pkl')
 except Exception as e:
     st.error(f"Error loading the model: {e}")
     st.stop()
