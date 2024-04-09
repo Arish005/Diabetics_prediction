@@ -1,11 +1,10 @@
 import streamlit as st
-import pickle
+import joblib
 import numpy as np
 
 # Load the trained model
 try:
-    with open('diabetes-prediction-rfc-model.pkl', 'rb') as model_file:
-        classifier = pickle.load(model_file)
+    classifier = joblib.load('diabetes-prediction-rfc-model.pkl')
 except Exception as e:
     st.error(f"Error loading the model: {e}")
     st.stop()
