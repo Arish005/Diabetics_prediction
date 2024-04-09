@@ -3,19 +3,24 @@ import joblib
 import numpy as np
 
 # Load the trained model
-# Save the trained model
 try:
-    joblib.dump(model, 'diabetes-prediction-rfc-model.pkl', compress=True)
+    model = joblib.load('diabetes-prediction-rfc-model.pkl')
 except Exception as e:
-    st.error(f"Error saving the model: {e}")
+    st.error(f"Error loading the model: {e}")
     st.stop()
-
 
 # Function to predict diabetes
 def predict_diabetes(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age):
     input_data = np.array([[Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age]])
     prediction = model.predict(input_data)
     return prediction
+
+# Save the trained model
+try:
+    joblib.dump(model, 'diabetes-prediction-rfc-model.pkl', compress=True)
+except Exception as e:
+    st.error(f"Error saving the model: {e}")
+    st.stop()
 
 # Streamlit app
 def main():
