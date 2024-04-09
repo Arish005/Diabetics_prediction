@@ -16,7 +16,10 @@ except Exception as e:
 
 # Function to predict diabetes
 def predict_diabetes(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age):
+    # Fill missing values with zeros
     input_data = np.array([[Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age]])
+    input_data = np.nan_to_num(input_data)
+    
     prediction = classifier.predict(input_data)
     return prediction
 
