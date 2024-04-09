@@ -4,6 +4,14 @@ import streamlit as st
 
 # Load the Random Forest Classifier model
 filename = 'diabetes-prediction-rfc-model.pkl'
+import joblib
+
+# Load the model
+classifier = joblib.load(open(filename, 'rb'))
+
+# Re-save the model with the correct dtype
+with open('diabetes-prediction-rfc-model.pkl', 'wb') as file:
+    joblib.dump(classifier, file)
 
 try:
     classifier = pickle.load(open(filename, 'rb'))
