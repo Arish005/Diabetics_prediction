@@ -6,7 +6,7 @@ import numpy as np
 def load_model():
     try:
         # Load the model
-        filename = 'diabetes-prediction-rfc-model.joblib'
+        filename = 'diabetes-prediction-rfc-model.pkl'
         classifier = joblib.load(filename)
         return classifier
     except Exception as e:
