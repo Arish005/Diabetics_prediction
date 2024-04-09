@@ -1,10 +1,9 @@
 import streamlit as st
-import pickle
+import joblib
 import numpy as np
 
 # Load the trained model
-with open('diabetes-prediction-rfc-model.pkl', 'rb') as model_file:
-    model = pickle.load(model_file)
+model = joblib.load('diabetes-prediction-rfc-model.pkl')
 
 # Function to predict diabetes
 def predict_diabetes(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age):
