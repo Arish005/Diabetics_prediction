@@ -1,38 +1,49 @@
-# Importing essential libraries
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
 import pickle
 
 # Loading the dataset
-# Loading the dataset with raw string literal
-df = pd.read_csv(r'diabetes.csv')
-# Loading the dataset with forward slashes
 df = pd.read_csv('diabetes.csv')
 
 # Renaming DiabetesPedigreeFunction as DPF
 df = df.rename(columns={'DiabetesPedigreeFunction':'DPF'})
 
 # Replacing the 0 values from ['Glucose','BloodPressure','SkinThickness','Insulin','BMI'] by NaN
-df_copy = df.copy(deep=True)
-df_copy[['Glucose','BloodPressure','SkinThickness','Insulin','BMI']] = df_copy[['Glucose','BloodPressure','SkinThickness','Insulin','BMI']].replace(0,np.NaN)
+df[['Glucose','BloodPressure','SkinThickness','Insulin','BMI']] = df[['Glucose','BloodPressure','SkinThickness','Insulin','BMI']].replace(0,np.NaN)
 
 # Replacing NaN value by mean, median depending upon distribution
-df_copy['Glucose'].fillna(df_copy['Glucose'].mean(), inplace=True)
-df_copy['BloodPressure'].fillna(df_copy['BloodPressure'].mean(), inplace=True)
-df_copy['SkinThickness'].fillna(df_copy['SkinThickness'].median(), inplace=True)
-df_copy['Insulin'].fillna(df_copy['Insulin'].median(), inplace=True)
-df_copy['BMI'].fillna(df_copy['BMI'].median(), inplace=True)
+df['Glucose'].fillna(df['Glucose'].mean(), inplace=True)
+df['BloodPressure'].fillna(df['BloodPressure'].mean(), inplace=True)
+df['SkinThickness'].fillna(df['SkinThickness'].median(), inplace=True)
+df['Insulin'].fillna(df['Insulin'].median(), inplace=True)
+df['BMI'].fillna(df['BMI'].median(), inplace=True)
 
 # Model Building
-from sklearn.model_selection import train_test_split
 X = df.drop(columns='Outcome')
 y = df['Outcome']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=0)
 
 # Creating Random Forest Model
-from sklearn.ensemble import RandomForestClassifier
 classifier = RandomForestClassifier(n_estimators=20)
 classifier.fit(X_train, y_train)
+
+# Manually fix dtype of tree nodes
+def fix_tree(tree):
+    if tree is not None:
+        tree.left_child = fix_tree(tree.left_child)
+        tree.right_child = fix_tree(tree.right_child)
+        tree.feature = int(tree.feature)
+        tree.threshold = float(tree.threshold)
+        tree.impurity = float(tree.impurity)
+        tree.n_node_samples = int(tree.n_node_samples)
+        tree.weighted_n_node_samples = float(tree.weighted_n_node_samples)
+    return tree
+
+# Apply fix_tree to each estimator
+for tree in classifier.estimators_:
+    fix_tree(tree.tree_)
 
 # Creating a pickle file for the classifier
 filename = 'diabetes-prediction-rfc-model.pkl'
