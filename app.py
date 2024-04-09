@@ -3,7 +3,12 @@ import pickle
 import numpy as np
 
 # Load the trained model
-model = pickle.load(open('diabetes-prediction-rfc-model.pkl', 'rb'))
+try:
+    with open('diabetes-prediction-rfc-model.pkl', 'rb') as file:
+        model = pickle.load(file)
+except Exception as e:
+    st.error(f"Error loading the model: {e}")
+    st.stop()
 
 # Function to predict diabetes
 def predict_diabetes(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age):
