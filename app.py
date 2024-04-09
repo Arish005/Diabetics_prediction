@@ -1,24 +1,16 @@
+# Importing essential libraries
 import streamlit as st
 import pickle
 import numpy as np
-# Assuming 'classifier' is your trained RandomForestClassifier model
-import joblib
-
-# Save the model with joblib
-joblib.dump(classifier, 'diabetes-prediction-rfc-model.pkl')
+import joblib  # Add this import statement
 
 # Load the trained model
-try:
-    with open('diabetes-prediction-rfc-model.pkl', 'rb') as file:
-        model = pickle.load(file)
-except Exception as e:
-    st.error(f"Error loading the model: {e}")
-    st.stop()
+classifier = pickle.load(open('diabetes-prediction-rfc-model.pkl', 'rb'))
 
 # Function to predict diabetes
 def predict_diabetes(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age):
     input_data = np.array([[Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age]])
-    prediction = model.predict(input_data)
+    prediction = classifier.predict(input_data)
     return prediction
 
 # Streamlit app
